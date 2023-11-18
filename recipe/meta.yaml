@@ -13,7 +13,7 @@ source:
     - 0001-Allow-running-on-subdir.patch
 
 build:
-  number: 0
+  number: 1
   skip: true  # [win]
 
 requirements:
@@ -31,6 +31,7 @@ requirements:
     - libsecret    # [linux]
     - libxkbfile   # [linux]
     - xorg-libx11  # [linux]
+    - python <3.12
   host:
     - nodejs 16.*
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
@@ -41,6 +42,7 @@ requirements:
     - libsecret    # [linux]
     - libxkbfile   # [linux]
     - xorg-libx11  # [linux]
+    - python <3.12
   run:
     - nodejs 16.*
     - ripgrep
