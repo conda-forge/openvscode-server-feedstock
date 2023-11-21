@@ -42,7 +42,6 @@ requirements:
     - libsecret    # [linux]
     - libxkbfile   # [linux]
     - xorg-libx11  # [linux]
-    - python 3.9
   run:
     - nodejs 16.*
     - ripgrep
