@@ -1,5 +1,6 @@
 azure:
-  swapfile_size: 10GiB
+  settings_linux:
+    swapfile_size: 10GiB
 bot:
   automerge: true
 build_platform:
