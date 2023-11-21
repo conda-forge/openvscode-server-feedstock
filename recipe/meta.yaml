@@ -13,7 +13,7 @@ source:
     - 0001-Allow-running-on-subdir.patch
 
 build:
-  number: 2
+  number: 3
   skip: true  # [win]
 
 requirements:
@@ -42,7 +42,6 @@ requirements:
     - libsecret    # [linux]
     - libxkbfile   # [linux]
     - xorg-libx11  # [linux]
-    - python 3.9
   run:
     - nodejs 16.*
     - ripgrep
