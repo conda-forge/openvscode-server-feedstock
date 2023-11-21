@@ -1,3 +1,5 @@
+azure:
+  swapfile_size: 10GiB
 os_version:
   linux_64: cos7
 build_platform:
