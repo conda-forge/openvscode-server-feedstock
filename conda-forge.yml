@@ -1,6 +1,7 @@
 azure:
   settings_linux:
     swapfile_size: 10GiB
+  free_disk_space: true
 bot:
   automerge: true
 build_platform:
