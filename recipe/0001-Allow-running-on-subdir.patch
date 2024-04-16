@@ -1,4 +1,4 @@
-From 09010d83db1d555f2a844457ebdb4a7f9759a484 Mon Sep 17 00:00:00 2001
+From 5d012eb115655ce2d89ccdc0b25a09e83f6be7c3 Mon Sep 17 00:00:00 2001
 From: "Uwe L. Korn" <uwe.korn@quantco.com>
 Date: Wed, 30 Nov 2022 17:37:46 +0100
 Subject: [PATCH] Allow running on subdir
@@ -9,10 +9,10 @@ Subject: [PATCH] Allow running on subdir
  .../code/browser/workbench/workbench-dev.html |  2 +-
  src/vs/code/browser/workbench/workbench.html  |  2 +-
  src/vs/code/browser/workbench/workbench.ts    |  3 +-
- .../common/extensionResourceLoader.ts         |  3 +-
+ .../common/extensionResourceLoader.ts         |  9 +-
  .../remote/browser/browserSocketFactory.ts    |  1 +
  src/vs/server/node/webClientServer.ts         | 92 ++++++++++++++++---
- 8 files changed, 89 insertions(+), 19 deletions(-)
+ 8 files changed, 92 insertions(+), 22 deletions(-)
 
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
 index cfc5b17..adbc0ec 100644
@@ -82,7 +82,7 @@ index a0e1c9c..783b028 100644
  
  	private startListening(): void {
 diff --git a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-index f166096..9194a86 100644
+index f166096..c7bd0d1 100644
 --- a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 +++ b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 @@ -16,7 +16,6 @@ import { getServiceMachineId } from 'vs/platform/externalServices/common/service
@@ -102,6 +102,19 @@ index f166096..9194a86 100644
  		}
  		return undefined;
  	}
+@@ -141,9 +140,9 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
+ 	}
+ 
+ 	protected _isWebExtensionResourceEndPoint(uri: URI): boolean {
+-		const uriPath = uri.path, serverRootPath = RemoteAuthorities.getServerRootPath();
+-		// test if the path starts with the server root path followed by the web extension resource end point segment
+-		return uriPath.startsWith(serverRootPath) && uriPath.startsWith(WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT, serverRootPath.length);
++		const uriPath = uri.path;
++		// test if the path starts with the web extension resource end point segment
++		return uriPath.startsWith(WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT);
+ 	}
+ 
+ }
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
 index e8d40cb..f44c920 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
