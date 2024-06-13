@@ -1,5 +1,5 @@
 {% set name = "openvscode-server" %}
-{% set version = "1.88.0" %}
+{% set version = "1.90.0" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/gitpod-io/openvscode-server/archive/refs/tags/openvscode-server-v{{ version }}.tar.gz
-  sha256: a4ce4b05b50dec8ea8bb343190be504b061f41074339706d31e1114f298f0665
+  sha256: 45db0082b4dfec3e34299e8d96b7b26f3712c14519b045e62f6e6a299dbbd0f6
   folder: src
   patches:
     - 0001-Allow-running-on-subdir.patch
@@ -18,8 +18,8 @@ build:
 
 requirements:
   build:
-    - sysroot_linux-64 2.17  # [build_platform == 'linux-64']
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
     - make
     - pkg-config
