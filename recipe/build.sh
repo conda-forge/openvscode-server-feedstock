@@ -42,8 +42,8 @@ popd
 # Install build tools for build_platform
 (
   export CFLAGS="-isystem ${BUILD_PREFIX}/include -O2"
-  export CXXFLAGS="-isystem ${BUILD_PREFIX}/include -O2"
-  unset CPPFLAGS
+  export CXXFLAGS="-isystem ${BUILD_PREFIX}/include -O2 -DIN_EXCL_UNLINK=0x04000000"
+  export CPPFLAGS="-DIN_EXCL_UNLINK=0x04000000"
   unset npm_config_arch
   export CC=${CC_FOR_BUILD}
   export CXX=${CXX_FOR_BUILD}
