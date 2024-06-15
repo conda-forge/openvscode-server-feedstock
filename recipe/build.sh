@@ -12,6 +12,7 @@ if [[ "${target_platform}" == "linux-64" ]]; then
 elif [[ "${target_platform}" == "linux-aarch64" ]]; then
   ARCH_ALIAS=linux-arm64
   export npm_config_arch="arm64"
+  export CPPFLAGS="-DIN_EXCL_UNLINK=0x04000000 $CPPFLAGS"
 elif [[ "${target_platform}" == "osx-64" ]]; then
   ARCH_ALIAS=darwin-x64
 elif [[ "${target_platform}" == "osx-arm64" ]]; then
