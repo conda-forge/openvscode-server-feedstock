@@ -12,6 +12,8 @@ if [[ "${target_platform}" == "linux-64" ]]; then
 elif [[ "${target_platform}" == "linux-aarch64" ]]; then
   ARCH_ALIAS=linux-arm64
   export npm_config_arch="arm64"
+  export CPPFLAGS="-DIN_EXCL_UNLINK=0x04000000 $CPPFLAGS"
+  export CXXFLAGS="-DIN_EXCL_UNLINK=0x04000000 $CXXFLAGS"
 elif [[ "${target_platform}" == "osx-64" ]]; then
   ARCH_ALIAS=darwin-x64
 elif [[ "${target_platform}" == "osx-arm64" ]]; then
@@ -40,8 +42,8 @@ popd
 # Install build tools for build_platform
 (
   export CFLAGS="-isystem ${BUILD_PREFIX}/include -O2"
-  export CXXFLAGS="-isystem ${BUILD_PREFIX}/include -O2"
-  unset CPPFLAGS
+  export CXXFLAGS="-isystem ${BUILD_PREFIX}/include -O2 -DIN_EXCL_UNLINK=0x04000000"
+  export CPPFLAGS="-DIN_EXCL_UNLINK=0x04000000"
   unset npm_config_arch
   export CC=${CC_FOR_BUILD}
   export CXX=${CXX_FOR_BUILD}
