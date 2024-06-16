@@ -1,5 +1,5 @@
 {% set name = "openvscode-server" %}
-{% set version = "1.90.0" %}
+{% set version = "1.90.1" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/gitpod-io/openvscode-server/archive/refs/tags/openvscode-server-v{{ version }}.tar.gz
-  sha256: 45db0082b4dfec3e34299e8d96b7b26f3712c14519b045e62f6e6a299dbbd0f6
+  sha256: 4df1a17dcd2f6c9733cca72b06f481045fb2692b78af823a3ef4091133e39167
   folder: src
   patches:
     - 0001-Allow-running-on-subdir.patch
