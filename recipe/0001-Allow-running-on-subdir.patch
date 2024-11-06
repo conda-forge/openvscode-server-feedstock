@@ -1,24 +1,8 @@
-From 7a7ffa28913b7866ff18e063f3d3204d46a2637b Mon Sep 17 00:00:00 2001
-From: "Uwe L. Korn" <uwe.korn@quantco.com>
-Date: Wed, 30 Nov 2022 17:37:46 +0100
-Subject: [PATCH] Allow running on subdir
-
----
- src/vs/base/common/network.ts                 |  4 +-
- src/vs/base/common/product.ts                 |  1 +
- .../code/browser/workbench/workbench-dev.html |  2 +-
- src/vs/code/browser/workbench/workbench.html  |  2 +-
- src/vs/code/browser/workbench/workbench.ts    |  3 +-
- .../common/extensionResourceLoader.ts         |  9 +-
- .../remote/browser/browserSocketFactory.ts    |  1 +
- src/vs/server/node/webClientServer.ts         | 90 ++++++++++++++++---
- 8 files changed, 91 insertions(+), 21 deletions(-)
-
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 2d5f856..bfa2189 100644
+index 7f14156..8fe6f4b 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -212,7 +212,9 @@ class RemoteAuthoritiesImpl {
+@@ -215,7 +215,9 @@ class RemoteAuthoritiesImpl {
  		return URI.from({
  			scheme: platform.isWeb ? this._preferredWebSchema : Schemas.vscodeRemoteResource,
  			authority: `${host}:${port}`,
@@ -30,14 +14,14 @@ index 2d5f856..bfa2189 100644
  		});
  	}
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
-index e30cf08..6d2f7e7 100644
+index 1f58ce0..82f7301 100644
 --- a/src/vs/base/common/product.ts
 +++ b/src/vs/base/common/product.ts
 @@ -56,6 +56,7 @@ export type ExtensionVirtualWorkspaceSupport = {
  
  export interface IProductConfiguration {
  	readonly version: string;
-+	readonly rootEndpoint?: string
++	readonly rootEndpoint?: string;
  	readonly date?: string;
  	readonly quality?: string;
  	readonly commit?: string;
@@ -55,7 +39,7 @@ index be6d30b..f644815 100644
  			self.webPackagePaths[key] = `${baseUrl}/remote/web/node_modules/${key}/${self.webPackagePaths[key]}`;
  		});
 diff --git a/src/vs/code/browser/workbench/workbench.html b/src/vs/code/browser/workbench/workbench.html
-index 019f0b9..c4788e2 100644
+index a4e9516..caefb15 100644
 --- a/src/vs/code/browser/workbench/workbench.html
 +++ b/src/vs/code/browser/workbench/workbench.html
 @@ -38,7 +38,7 @@
@@ -68,7 +52,7 @@ index 019f0b9..c4788e2 100644
  			self.webPackagePaths[key] = `${baseUrl}/node_modules/${key}/${self.webPackagePaths[key]}`;
  		});
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index a0e1c9c..783b028 100644
+index 7825456..afbe2b3 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
 @@ -304,7 +304,8 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
@@ -82,15 +66,15 @@ index a0e1c9c..783b028 100644
  
  	private startListening(): void {
 diff --git a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-index 120b996..0182da8 100644
+index e73ec41..c20b0ee 100644
 --- a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 +++ b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-@@ -15,7 +15,6 @@ import { getServiceMachineId } from 'vs/platform/externalServices/common/service
- import { IStorageService } from 'vs/platform/storage/common/storage';
- import { TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
- import { getTelemetryLevel, supportsTelemetry } from 'vs/platform/telemetry/common/telemetryUtils';
--import { RemoteAuthorities } from 'vs/base/common/network';
- import { TargetPlatform } from 'vs/platform/extensions/common/extensions';
+@@ -15,7 +15,6 @@ import { getServiceMachineId } from '../../externalServices/common/serviceMachin
+ import { IStorageService } from '../../storage/common/storage.js';
+ import { TelemetryLevel } from '../../telemetry/common/telemetry.js';
+ import { getTelemetryLevel, supportsTelemetry } from '../../telemetry/common/telemetryUtils.js';
+-import { RemoteAuthorities } from '../../../base/common/network.js';
+ import { TargetPlatform } from '../../extensions/common/extensions.js';
  
  const WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT = '/web-extension-resource/';
 @@ -98,7 +97,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
@@ -116,7 +100,7 @@ index 120b996..0182da8 100644
  
  }
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
-index e8d40cb..f44c920 100644
+index 7aea766..d70ef0f 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
 +++ b/src/vs/platform/remote/browser/browserSocketFactory.ts
 @@ -281,6 +281,7 @@ export class BrowserSocketFactory implements ISocketFactory<RemoteConnectionType
@@ -128,10 +112,10 @@ index e8d40cb..f44c920 100644
  			const errorListener = socket.onError(reject);
  			socket.onOpen(() => {
 diff --git a/src/vs/server/node/webClientServer.ts b/src/vs/server/node/webClientServer.ts
-index e47368f..ba9a813 100644
+index e8f879e..6568abe 100644
 --- a/src/vs/server/node/webClientServer.ts
 +++ b/src/vs/server/node/webClientServer.ts
-@@ -269,17 +269,12 @@ export class WebClientServer {
+@@ -272,17 +272,13 @@ export class WebClientServer {
  			return void res.end();
  		}
  
@@ -147,14 +131,15 @@ index e47368f..ba9a813 100644
 -				: (getFirstHeader('x-original-host') || getFirstHeader('x-forwarded-host') || req.headers.host)
 -		);
 +		// For now we are getting the remote authority from the client to avoid
-+                // needing specific configuration for reverse proxies to work.  Set this to
-+                // something invalid to make sure we catch code that is using this value
-+                // from the backend when it should not.
-+               const remoteAuthority = 'remote';
++		// needing specific configuration for reverse proxies to work.  Set this to
++		// something invalid to make sure we catch code that is using this value
++		// from the backend when it should not.
++		const remoteAuthority = 'remote';
++
  		if (!remoteAuthority) {
  			return serveError(req, res, 400, `Bad request.`);
  		}
-@@ -305,7 +300,11 @@ export class WebClientServer {
+@@ -308,7 +304,11 @@ export class WebClientServer {
  			scopes: [['user:email'], ['repo']]
  		} : undefined;
  
@@ -166,7 +151,7 @@ index e47368f..ba9a813 100644
  			// embedderIdentifier: 'server-distro',
  			// extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
  			// 	...this._productService.extensionsGallery,
-@@ -351,9 +350,9 @@ export class WebClientServer {
+@@ -354,9 +354,9 @@ export class WebClientServer {
  		const values: { [key: string]: string } = {
  			WORKBENCH_WEB_CONFIGURATION: asJSON(workbenchWebConfiguration),
  			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
@@ -177,8 +162,8 @@ index e47368f..ba9a813 100644
 +			WORKBENCH_NLS_FALLBACK_URL: vscodeBase + `${this._staticRoute}/out/nls.messages.js`
  		};
  
- 		if (useTestResolver) {
-@@ -453,3 +452,70 @@ export class WebClientServer {
+ 		// DEV ---------------------------------------------------------------------------------------
+@@ -468,3 +468,70 @@ export class WebClientServer {
  		return void res.end(data);
  	}
  }
