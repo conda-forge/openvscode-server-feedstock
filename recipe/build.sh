@@ -34,10 +34,10 @@ pushd remote
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
   jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig > package.json
-  yarn install
+  npm install
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
-  yarn add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}"
+  npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}"
 popd
 # Install build tools for build_platform
 (
@@ -56,12 +56,12 @@ popd
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
   jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig | jq 'del(.devDependencies."@vscode/telemetry-extractor")' > package.json
-  yarn install
+  npm install
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
-  yarn add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}" "@vscode/telemetry-extractor@${VSCODE_TELEMETRY_VERSION}"
+  npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}" "@vscode/telemetry-extractor@${VSCODE_TELEMETRY_VERSION}"
 )
-yarn gulp vscode-reh-web-${ARCH_ALIAS}-min
+npm gulp vscode-reh-web-${ARCH_ALIAS}-min
 popd
 
 mkdir -p $PREFIX/share

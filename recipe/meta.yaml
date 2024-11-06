@@ -37,7 +37,6 @@ requirements:
     - nodejs 18.*
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
     - openssl
-    - yarn <2
     - ripgrep
     - glib         # [linux]
     - krb5         # [linux]
