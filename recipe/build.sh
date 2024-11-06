@@ -61,7 +61,7 @@ popd
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}" "@vscode/telemetry-extractor@${VSCODE_TELEMETRY_VERSION}"
 )
-npm gulp vscode-reh-web-${ARCH_ALIAS}-min
+npx gulp vscode-reh-web-${ARCH_ALIAS}-min
 popd
 
 mkdir -p $PREFIX/share
