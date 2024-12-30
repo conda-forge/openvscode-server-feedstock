@@ -33,6 +33,7 @@ requirements:
     - libsecret    # [linux]
     - libxkbfile   # [linux]
     - xorg-libx11  # [linux]
+    - xorg-xproto  # [linux]
   host:
     - nodejs 18.*
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
@@ -43,6 +44,7 @@ requirements:
     - libsecret    # [linux]
     - libxkbfile   # [linux]
     - xorg-libx11  # [linux]
+    - xorg-xproto  # [linux]
   run:
     - nodejs 18.*
     - ripgrep
