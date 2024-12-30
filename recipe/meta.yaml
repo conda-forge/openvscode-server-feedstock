@@ -28,25 +28,25 @@ requirements:
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
     - openssl
     - jq
-    - glib         # [linux]
-    - krb5         # [linux]
-    - libsecret    # [linux]
-    - libxkbfile   # [linux]
-    - xorg-libx11  # [linux]
-    - xorg-xproto  # [linux]
-    - xorg-kbproto # [linux]
+    - glib          # [linux]
+    - krb5          # [linux]
+    - libsecret     # [linux]
+    - libxkbfile    # [linux]
+    - xorg-libx11   # [linux]
+    - xorg-xproto   # [linux]
+    - xorg-kbproto  # [linux]
   host:
     - nodejs 18.*
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
     - openssl
     - ripgrep
-    - glib         # [linux]
-    - krb5         # [linux]
-    - libsecret    # [linux]
-    - libxkbfile   # [linux]
-    - xorg-libx11  # [linux]
-    - xorg-xproto  # [linux]
-    - xorg-kbproto # [linux]
+    - glib          # [linux]
+    - krb5          # [linux]
+    - libsecret     # [linux]
+    - libxkbfile    # [linux]
+    - xorg-libx11   # [linux]
+    - xorg-xproto   # [linux]
+    - xorg-kbproto  # [linux]
   run:
     - nodejs 18.*
     - ripgrep
