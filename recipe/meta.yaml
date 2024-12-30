@@ -1,5 +1,5 @@
 {% set name = "openvscode-server" %}
-{% set version = "1.92.1" %}
+{% set version = "1.94.2" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/gitpod-io/openvscode-server/archive/refs/tags/openvscode-server-v{{ version }}.tar.gz
-  sha256: 945fd8229e78c170ad3e1feb71ed2f6a828cccc9eaeb1be30f955312427fb911
+  sha256: 5ff03d640cccab7aa14f213a0a13b1f88eeef767ba43817dc5f230dba2b50992
   folder: src
   patches:
     - 0001-Allow-running-on-subdir.patch
@@ -28,22 +28,25 @@ requirements:
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
     - openssl
     - jq
-    - glib         # [linux]
-    - krb5         # [linux]
-    - libsecret    # [linux]
-    - libxkbfile   # [linux]
-    - xorg-libx11  # [linux]
+    - glib          # [linux]
+    - krb5          # [linux]
+    - libsecret     # [linux]
+    - libxkbfile    # [linux]
+    - xorg-libx11   # [linux]
+    - xorg-xproto   # [linux]
+    - xorg-kbproto  # [linux]
   host:
     - nodejs 18.*
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
     - openssl
-    - yarn <2
     - ripgrep
-    - glib         # [linux]
-    - krb5         # [linux]
-    - libsecret    # [linux]
-    - libxkbfile   # [linux]
-    - xorg-libx11  # [linux]
+    - glib          # [linux]
+    - krb5          # [linux]
+    - libsecret     # [linux]
+    - libxkbfile    # [linux]
+    - xorg-libx11   # [linux]
+    - xorg-xproto   # [linux]
+    - xorg-kbproto  # [linux]
   run:
     - nodejs 18.*
     - ripgrep
