@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/gitpod-io/openvscode-server/archive/refs/tags/openvscode-server-v{{ version }}.tar.gz
-  sha256: 5ff03d640cccab7aa14f213a0a13b1f88eeef767ba43817dc5f230dba2b50992
+  sha256: 5f3315ea7f4d6fbd5c995e2d8c3d8f1620b1f5b365d12a0d0e3388681c79f500
   folder: src
   patches:
     - 0001-Allow-running-on-subdir.patch
