@@ -9,8 +9,6 @@ source:
   url: https://github.com/gitpod-io/openvscode-server/archive/refs/tags/openvscode-server-v{{ version }}.tar.gz
   sha256: 869c8259d69fe6209013ab66d0641caa7e300aac8fe29d1ec4195e1fc18c534e
   folder: src
-  patches:
-    - 0001-Allow-running-on-subdir.patch
 
 build:
   number: 0
