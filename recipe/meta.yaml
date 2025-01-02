@@ -21,7 +21,6 @@ requirements:
     - {{ compiler('c') }}
     - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
-    - {{ compiler('gcc') }}
     - make
     - pkg-config
     - nodejs 20.*
