@@ -33,7 +33,7 @@ pushd remote
   VSCODE_RIPGREP_VERSION=$(jq -r '.dependencies."@vscode/ripgrep"' package.json)
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
-  jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig' > package.json
+  jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig > package.json
   npm install --verbose
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
