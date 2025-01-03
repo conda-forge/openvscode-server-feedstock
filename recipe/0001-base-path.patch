@@ -38,21 +38,8 @@ index 140030d8abe..279af84b891 100644
  		globalThis._VSCODE_FILE_ROOT = baseUrl + '/out/';
  	</script>
  	<script>
-diff --git a/src/vs/code/browser/workbench/workbench.html b/src/vs/code/browser/workbench/workbench.html
-index 77881982735..cb80312955c 100644
---- a/src/vs/code/browser/workbench/workbench.html
-+++ b/src/vs/code/browser/workbench/workbench.html
-@@ -34,7 +34,7 @@
- 
- 	<!-- Startup (do not modify order of script tags!) -->
- 	<script>
--		const baseUrl = new URL('{{WORKBENCH_WEB_BASE_URL}}', window.location.origin).toString();
-+		const baseUrl = new URL('{{WORKBENCH_WEB_BASE_URL}}', window.location).toString();
- 		globalThis._VSCODE_FILE_ROOT = baseUrl + '/out/';
- 	</script>
- 	<script>
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 5ad89d22db6..6ca672db9b9 100644
+index 5ad89d22db6..f944c89569c 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
 @@ -317,7 +317,8 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
@@ -65,40 +52,19 @@ index 5ad89d22db6..6ca672db9b9 100644
  	}
  
  	private startListening(): void {
-@@ -563,17 +564,6 @@ class WorkspaceProvider implements IWorkspaceProvider {
- 	}
- }
- 
--function readCookie(name: string): string | undefined {
--	const cookies = document.cookie.split('; ');
--	for (const cookie of cookies) {
--		if (cookie.startsWith(name + '=')) {
--			return cookie.substring(name.length + 1);
--		}
--	}
--
--	return undefined;
--}
--
- (function () {
- 
- 	// Find config by checking for DOM
-@@ -582,8 +572,8 @@ function readCookie(name: string): string | undefined {
- 	if (!configElement || !configElementAttribute) {
- 		throw new Error('Missing web configuration element');
- 	}
--	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
--	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
-+	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = { ...JSON.parse(configElementAttribute), remoteAuthority: location.host }
-+	const secretStorageKeyPath = (window.location.pathname + "/mint-key").replace(/\/\/+/g, "/");
- 	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
- 		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
- 	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = {
 diff --git a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-index e73ec41aba9..8a9201139b7 100644
+index e73ec41aba9..c20b0eed174 100644
 --- a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 +++ b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-@@ -98,7 +98,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
+@@ -15,7 +15,6 @@ import { getServiceMachineId } from '../../externalServices/common/serviceMachin
+ import { IStorageService } from '../../storage/common/storage.js';
+ import { TelemetryLevel } from '../../telemetry/common/telemetry.js';
+ import { getTelemetryLevel, supportsTelemetry } from '../../telemetry/common/telemetryUtils.js';
+-import { RemoteAuthorities } from '../../../base/common/network.js';
+ import { TargetPlatform } from '../../extensions/common/extensions.js';
+ 
+ const WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT = '/web-extension-resource/';
+@@ -98,7 +97,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
  					: version,
  				path: 'extension'
  			}));
@@ -107,6 +73,19 @@ index e73ec41aba9..8a9201139b7 100644
  		}
  		return undefined;
  	}
+@@ -140,9 +139,9 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
+ 	}
+ 
+ 	protected _isWebExtensionResourceEndPoint(uri: URI): boolean {
+-		const uriPath = uri.path, serverRootPath = RemoteAuthorities.getServerRootPath();
+-		// test if the path starts with the server root path followed by the web extension resource end point segment
+-		return uriPath.startsWith(serverRootPath) && uriPath.startsWith(WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT, serverRootPath.length);
++		const uriPath = uri.path;
++		// test if the path starts with the web extension resource end point segment
++		return uriPath.startsWith(WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT);
+ 	}
+ 
+ }
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
 index 7aea766301a..d70ef0f90d0 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
@@ -120,10 +99,10 @@ index 7aea766301a..d70ef0f90d0 100644
  			const errorListener = socket.onError(reject);
  			socket.onOpen(() => {
 diff --git a/src/vs/server/node/webClientServer.ts b/src/vs/server/node/webClientServer.ts
-index a04fee7f2ba..ab03230f1e8 100644
+index a04fee7f2ba..c675ecebdf5 100644
 --- a/src/vs/server/node/webClientServer.ts
 +++ b/src/vs/server/node/webClientServer.ts
-@@ -271,16 +271,15 @@ export class WebClientServer {
+@@ -271,17 +271,13 @@ export class WebClientServer {
  			return void res.end();
  		}
  
@@ -133,40 +112,33 @@ index a04fee7f2ba..ab03230f1e8 100644
 -		};
 -
  		const useTestResolver = (!this._environmentService.isBuilt && this._environmentService.args['use-test-resolver']);
+-		const remoteAuthority = (
+-			useTestResolver
+-				? 'test+test'
+-				: (getFirstHeader('x-original-host') || getFirstHeader('x-forwarded-host') || req.headers.host)
+-		);
 +		// For now we are getting the remote authority from the client to avoid
 +		// needing specific configuration for reverse proxies to work.  Set this to
 +		// something invalid to make sure we catch code that is using this value
 +		// from the backend when it should not.
- 		const remoteAuthority = (
- 			useTestResolver
- 				? 'test+test'
--				: (getFirstHeader('x-original-host') || getFirstHeader('x-forwarded-host') || req.headers.host)
-+				: 'remote'
- 		);
++		const remoteAuthority = 'remote';
++
  		if (!remoteAuthority) {
  			return serveError(req, res, 400, `Bad request.`);
-@@ -307,7 +306,11 @@ export class WebClientServer {
+ 		}
+@@ -307,7 +303,11 @@ export class WebClientServer {
  			scopes: [['user:email'], ['repo']]
  		} : undefined;
  
-+		const base = relativeRoot(getOriginalUrl(req))
-+		const vscodeBase = relativePath(getOriginalUrl(req))
++		const base = relativeRoot(getOriginalUrl(req));
++		const vscodeBase = relativePath(getOriginalUrl(req));
 +
  		const productConfiguration = {
 +			rootEndpoint: base,
  			// embedderIdentifier: 'server-distro',
  			// extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
  			// 	...this._productService.extensionsGallery,
-@@ -336,7 +339,7 @@ export class WebClientServer {
- 			folderUri: resolveWorkspaceURI(this._environmentService.args['default-folder']),
- 			workspaceUri: resolveWorkspaceURI(this._environmentService.args['default-workspace']),
- 			productConfiguration,
--			callbackRoute: this._callbackRoute
-+			callbackRoute: vscodeBase + this._callbackRoute
- 		};
- 
- 		const cookies = cookie.parse(req.headers.cookie || '');
-@@ -353,9 +356,11 @@ export class WebClientServer {
+@@ -353,9 +353,9 @@ export class WebClientServer {
  		const values: { [key: string]: string } = {
  			WORKBENCH_WEB_CONFIGURATION: asJSON(workbenchWebConfiguration),
  			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
@@ -174,22 +146,11 @@ index a04fee7f2ba..ab03230f1e8 100644
 +			WORKBENCH_WEB_BASE_URL: vscodeBase + this._staticRoute,
  			WORKBENCH_NLS_URL,
 -			WORKBENCH_NLS_FALLBACK_URL: `${this._staticRoute}/out/nls.messages.js`
-+			WORKBENCH_NLS_FALLBACK_URL: `${vscodeBase}${this._staticRoute}/out/nls.messages.js`,
-+			BASE: base,
-+			VS_BASE: vscodeBase,
++			WORKBENCH_NLS_FALLBACK_URL: vscodeBase + `${this._staticRoute}/out/nls.messages.js`
  		};
  
  		// DEV ---------------------------------------------------------------------------------------
-@@ -392,7 +397,7 @@ export class WebClientServer {
- 			'default-src \'self\';',
- 			'img-src \'self\' https: data: blob:;',
- 			'media-src \'self\';',
--			`script-src 'self' 'unsafe-eval' ${WORKBENCH_NLS_BASE_URL ?? ''} blob: 'nonce-1nline-m4p' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' 'sha256-/r7rqQ+yrxt57sxLuQ6AMYcy/lUpvAIzHjIJt/OeLWU=' ${useTestResolver ? '' : `http://${remoteAuthority}`};`,  // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
-+			`script-src 'self' 'unsafe-eval' ${WORKBENCH_NLS_BASE_URL ?? ''} blob: 'nonce-1nline-m4p' ${this._getScriptCspHashes(data).join(' ')} '${webWorkerExtensionHostIframeScriptSHA}' 'sha256-/r7rqQ+yrxt57sxLuQ6AMYcy/lUpvAIzHjIJt/OeLWU=' ${useTestResolver ? '' : ``};`,  // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
- 			'child-src \'self\';',
- 			`frame-src 'self' https://*.vscode-cdn.net data:;`,
- 			'worker-src \'self\' data: blob:;',
-@@ -465,3 +470,70 @@ export class WebClientServer {
+@@ -465,3 +465,70 @@ export class WebClientServer {
  		return void res.end(data);
  	}
  }
