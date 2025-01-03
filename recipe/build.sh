@@ -39,6 +39,12 @@ pushd remote
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}"
 popd
+pushd build
+  mv package.json package.json.orig
+  # Temporarily remove tree-sitter-typescript optional depencency, as it runs into compilation issues.
+  jq 'del(.optionalDependencies."tree-sitter-typescript")' package.json.orig > package.json
+  npm install --verbose
+popd
 # Install build tools for build_platform
 (
   export CFLAGS="-isystem ${BUILD_PREFIX}/include -O2"
