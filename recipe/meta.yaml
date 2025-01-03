@@ -10,7 +10,7 @@ source:
   sha256: 5f3315ea7f4d6fbd5c995e2d8c3d8f1620b1f5b365d12a0d0e3388681c79f500
   folder: src
   patches:
-    - 0001-base-path.patch
+    - 0001-Allow-running-on-subdir.patch
 
 build:
   number: 0
