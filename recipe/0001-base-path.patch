@@ -1,13 +1,5 @@
-Add base path support
-
-Some users will host code-server behind a path-rewriting reverse proxy, for
-example domain.tld/my/base/path.  This patch adds support for that since Code
-assumes everything is on / by default.
-
-To test this serve code-server behind a reverse proxy with a path like /code.
-
-Index: b/src/vs/base/common/network.ts
-===================================================================
+diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
+index f220611a722..5b6e0de871a 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
 @@ -220,7 +220,9 @@ class RemoteAuthoritiesImpl {
@@ -21,12 +13,11 @@ Index: b/src/vs/base/common/network.ts
  			query
  		});
  	}
-
-Index: b/src/vs/code/browser/workbench/workbench-dev.html
-===================================================================
+diff --git a/src/vs/code/browser/workbench/workbench-dev.html b/src/vs/code/browser/workbench/workbench-dev.html
+index 140030d8abe..279af84b891 100644
 --- a/src/vs/code/browser/workbench/workbench-dev.html
 +++ b/src/vs/code/browser/workbench/workbench-dev.html
-@@ -39,7 +39,7 @@
+@@ -37,7 +37,7 @@
  
  	<!-- Startup (do not modify order of script tags!) -->
  	<script>
@@ -35,12 +26,11 @@ Index: b/src/vs/code/browser/workbench/workbench-dev.html
  		globalThis._VSCODE_FILE_ROOT = baseUrl + '/out/';
  	</script>
  	<script>
-
-Index: b/src/vs/code/browser/workbench/workbench.html
-===================================================================
+diff --git a/src/vs/code/browser/workbench/workbench.html b/src/vs/code/browser/workbench/workbench.html
+index 77881982735..cb80312955c 100644
 --- a/src/vs/code/browser/workbench/workbench.html
 +++ b/src/vs/code/browser/workbench/workbench.html
-@@ -36,7 +36,7 @@
+@@ -34,7 +34,7 @@
  
  	<!-- Startup (do not modify order of script tags!) -->
  	<script>
@@ -49,12 +39,67 @@ Index: b/src/vs/code/browser/workbench/workbench.html
  		globalThis._VSCODE_FILE_ROOT = baseUrl + '/out/';
  	</script>
  	<script>
-
-Index: b/src/vs/platform/remote/browser/browserSocketFactory.ts
-===================================================================
+diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
+index 5ad89d22db6..6ca672db9b9 100644
+--- a/src/vs/code/browser/workbench/workbench.ts
++++ b/src/vs/code/browser/workbench/workbench.ts
+@@ -317,7 +317,8 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
+ 			this.startListening();
+ 		}
+ 
+-		return URI.parse(mainWindow.location.href).with({ path: this._callbackRoute, query: queryParams.join('&') });
++		const path = (mainWindow.location.pathname + "/" + this._callbackRoute).replace(/\/\/+/g, "/");
++		return URI.parse(mainWindow.location.href).with({ path: path, query: queryParams.join('&') });
+ 	}
+ 
+ 	private startListening(): void {
+@@ -563,17 +564,6 @@ class WorkspaceProvider implements IWorkspaceProvider {
+ 	}
+ }
+ 
+-function readCookie(name: string): string | undefined {
+-	const cookies = document.cookie.split('; ');
+-	for (const cookie of cookies) {
+-		if (cookie.startsWith(name + '=')) {
+-			return cookie.substring(name.length + 1);
+-		}
+-	}
+-
+-	return undefined;
+-}
+-
+ (function () {
+ 
+ 	// Find config by checking for DOM
+@@ -582,8 +572,8 @@ function readCookie(name: string): string | undefined {
+ 	if (!configElement || !configElementAttribute) {
+ 		throw new Error('Missing web configuration element');
+ 	}
+-	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
+-	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
++	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = { ...JSON.parse(configElementAttribute), remoteAuthority: location.host }
++	const secretStorageKeyPath = (window.location.pathname + "/mint-key").replace(/\/\/+/g, "/");
+ 	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
+ 		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
+ 	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = {
+diff --git a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
+index e73ec41aba9..8a9201139b7 100644
+--- a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
++++ b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
+@@ -98,7 +98,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
+ 					: version,
+ 				path: 'extension'
+ 			}));
+-			return this._isWebExtensionResourceEndPoint(uri) ? uri.with({ scheme: RemoteAuthorities.getPreferredWebSchema() }) : uri;
++			return this._isWebExtensionResourceEndPoint(uri) ? URI.joinPath(URI.parse(window.location.href), uri.path) : uri;
+ 		}
+ 		return undefined;
+ 	}
+diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
+index 7aea766301a..d70ef0f90d0 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
 +++ b/src/vs/platform/remote/browser/browserSocketFactory.ts
-@@ -281,6 +281,7 @@ export class BrowserSocketFactory implem
+@@ -281,6 +281,7 @@ export class BrowserSocketFactory implements ISocketFactory<RemoteConnectionType
  	connect({ host, port }: WebSocketRemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
  		return new Promise<ISocket>((resolve, reject) => {
  			const webSocketSchema = (/^https:/.test(mainWindow.location.href) ? 'wss' : 'ws');
@@ -62,9 +107,8 @@ Index: b/src/vs/platform/remote/browser/browserSocketFactory.ts
  			const socket = this._webSocketFactory.create(`${webSocketSchema}://${(/:/.test(host) && !/\[/.test(host)) ? `[${host}]` : host}:${port}${path}?${query}&skipWebSocketFrames=false`, debugLabel);
  			const errorListener = socket.onError(reject);
  			socket.onOpen(() => {
-
-Index: b/src/vs/server/node/webClientServer.ts
-===================================================================
+diff --git a/src/vs/server/node/webClientServer.ts b/src/vs/server/node/webClientServer.ts
+index a04fee7f2ba..d5c5c94b0d6 100644
 --- a/src/vs/server/node/webClientServer.ts
 +++ b/src/vs/server/node/webClientServer.ts
 @@ -271,16 +271,15 @@ export class WebClientServer {
@@ -89,7 +133,17 @@ Index: b/src/vs/server/node/webClientServer.ts
  		);
  		if (!remoteAuthority) {
  			return serveError(req, res, 400, `Bad request.`);
-@@ -337,7 +340,7 @@ export class WebClientServer {
+@@ -307,6 +306,9 @@ export class WebClientServer {
+ 			scopes: [['user:email'], ['repo']]
+ 		} : undefined;
+ 
++		const base = relativeRoot(getOriginalUrl(req))
++		const vscodeBase = relativePath(getOriginalUrl(req))
++
+ 		const productConfiguration = {
+ 			// embedderIdentifier: 'server-distro',
+ 			// extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
+@@ -336,7 +338,7 @@ export class WebClientServer {
  			folderUri: resolveWorkspaceURI(this._environmentService.args['default-folder']),
  			workspaceUri: resolveWorkspaceURI(this._environmentService.args['default-workspace']),
  			productConfiguration,
@@ -98,7 +152,7 @@ Index: b/src/vs/server/node/webClientServer.ts
  		};
  
  		const cookies = cookie.parse(req.headers.cookie || '');
-@@ -354,9 +357,11 @@ export class WebClientServer {
+@@ -353,9 +355,11 @@ export class WebClientServer {
  		const values: { [key: string]: string } = {
  			WORKBENCH_WEB_CONFIGURATION: asJSON(workbenchWebConfiguration),
  			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
@@ -112,7 +166,7 @@ Index: b/src/vs/server/node/webClientServer.ts
  		};
  
  		// DEV ---------------------------------------------------------------------------------------
-@@ -393,7 +398,7 @@ export class WebClientServer {
+@@ -392,7 +396,7 @@ export class WebClientServer {
  			'default-src \'self\';',
  			'img-src \'self\' https: data: blob:;',
  			'media-src \'self\';',
@@ -121,7 +175,7 @@ Index: b/src/vs/server/node/webClientServer.ts
  			'child-src \'self\';',
  			`frame-src 'self' https://*.vscode-cdn.net data:;`,
  			'worker-src \'self\' data: blob:;',
-@@ -466,3 +471,70 @@ export class WebClientServer {
+@@ -465,3 +469,70 @@ export class WebClientServer {
  		return void res.end(data);
  	}
  }
@@ -192,61 +246,3 @@ Index: b/src/vs/server/node/webClientServer.ts
 +export const getOriginalUrl = (req: http.IncomingMessage): string => {
 +	return (req as any).originalUrl || req.url
 +}
-
-Index: b/src/vs/code/browser/workbench/workbench.ts
-===================================================================
---- a/src/vs/code/browser/workbench/workbench.ts
-+++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -317,7 +317,8 @@ class LocalStorageURLCallbackProvider ex
- 			this.startListening();
- 		}
- 
--		return URI.parse(mainWindow.location.href).with({ path: this._callbackRoute, query: queryParams.join('&') });
-+		const path = (mainWindow.location.pathname + "/" + this._callbackRoute).replace(/\/\/+/g, "/");
-+		return URI.parse(mainWindow.location.href).with({ path: path, query: queryParams.join('&') });
- 	}
- 
- 	private startListening(): void {
-@@ -563,17 +564,6 @@ class WorkspaceProvider implements IWork
- 	}
- }
- 
--function readCookie(name: string): string | undefined {
--	const cookies = document.cookie.split('; ');
--	for (const cookie of cookies) {
--		if (cookie.startsWith(name + '=')) {
--			return cookie.substring(name.length + 1);
--		}
--	}
--
--	return undefined;
--}
--
- (function () {
- 
- 	// Find config by checking for DOM
-@@ -582,8 +572,8 @@ function readCookie(name: string): string | undefined {
- 	if (!configElement || !configElementAttribute) {
- 		throw new Error('Missing web configuration element');
- 	}
--	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
--	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
-+	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = { ...JSON.parse(configElementAttribute), remoteAuthority: location.host }
-+	const secretStorageKeyPath = (window.location.pathname + "/mint-key").replace(/\/\/+/g, "/");
- 	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
- 		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
- 	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = {
-
-Index: b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-===================================================================
---- a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-+++ b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-@@ -98,7 +98,7 @@ export abstract class AbstractExtensionR
- 					: version,
- 				path: 'extension'
- 			}));
--			return this._isWebExtensionResourceEndPoint(uri) ? uri.with({ scheme: RemoteAuthorities.getPreferredWebSchema() }) : uri;
-+			return this._isWebExtensionResourceEndPoint(uri) ? URI.joinPath(URI.parse(window.location.href), uri.path) : uri;
- 		}
- 		return undefined;
- 	}
