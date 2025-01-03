@@ -62,7 +62,6 @@ popd
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
   jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig | jq 'del(.devDependencies."@vscode/telemetry-extractor")' > package.json
-  echo "Second install"
   npm install --verbose
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
