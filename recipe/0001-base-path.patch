@@ -13,6 +13,18 @@ index f220611a722..5b6e0de871a 100644
  			query
  		});
  	}
+diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
+index ac7c5529b27..15524da6371 100644
+--- a/src/vs/base/common/product.ts
++++ b/src/vs/base/common/product.ts
+@@ -56,6 +56,7 @@ export type ExtensionVirtualWorkspaceSupport = {
+ 
+ export interface IProductConfiguration {
+ 	readonly version: string;
++	readonly rootEndpoint?: string;
+ 	readonly date?: string;
+ 	readonly quality?: string;
+ 	readonly commit?: string;
 diff --git a/src/vs/code/browser/workbench/workbench-dev.html b/src/vs/code/browser/workbench/workbench-dev.html
 index 140030d8abe..279af84b891 100644
 --- a/src/vs/code/browser/workbench/workbench-dev.html
