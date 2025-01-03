@@ -40,6 +40,12 @@ pushd remote
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}"
 popd
+pushd build
+  mv package.json package.json.orig
+  # Temporarily remove tree-sitter-typescript optional depencency, as it runs into compilation issues.
+  jq 'del(.optionalDependencies."tree-sitter-typescript")' package.json.orig > package.json
+  npm install --verbose
+popd
 # Install build tools for build_platform
 (
   export CFLAGS="-isystem ${BUILD_PREFIX}/include -O2"
@@ -57,8 +63,7 @@ popd
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
   jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig | jq 'del(.devDependencies."@vscode/telemetry-extractor")' > package.json
-  # Omitting optional dependencies, as the 'tree-sitter-typescript' package errored during compilation ('npm error make: gcc: No such file or directory').
-  npm install --omit=optional --verbose
+  npm install --verbose
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}" "@vscode/telemetry-extractor@${VSCODE_TELEMETRY_VERSION}"
