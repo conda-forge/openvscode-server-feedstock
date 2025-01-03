@@ -40,9 +40,8 @@ pushd remote
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}"
 popd
 pushd build
-  # Omitting optional dependencies.
-  # The 'tree-sitter-typescript' library it errors during compilation ('npm error make: gcc: No such file or directory').
-  npm install --verbose --omit=optional
+  # Compile contents of build directory with our compilation flags.
+  npm install --verbose
 popd
 # Install build tools for build_platform
 (
