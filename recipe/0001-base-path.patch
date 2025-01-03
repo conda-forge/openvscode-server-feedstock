@@ -120,7 +120,7 @@ index 7aea766301a..d70ef0f90d0 100644
  			const errorListener = socket.onError(reject);
  			socket.onOpen(() => {
 diff --git a/src/vs/server/node/webClientServer.ts b/src/vs/server/node/webClientServer.ts
-index a04fee7f2ba..d5c5c94b0d6 100644
+index a04fee7f2ba..ab03230f1e8 100644
 --- a/src/vs/server/node/webClientServer.ts
 +++ b/src/vs/server/node/webClientServer.ts
 @@ -271,16 +271,15 @@ export class WebClientServer {
@@ -145,7 +145,7 @@ index a04fee7f2ba..d5c5c94b0d6 100644
  		);
  		if (!remoteAuthority) {
  			return serveError(req, res, 400, `Bad request.`);
-@@ -307,6 +306,9 @@ export class WebClientServer {
+@@ -307,7 +306,11 @@ export class WebClientServer {
  			scopes: [['user:email'], ['repo']]
  		} : undefined;
  
@@ -153,9 +153,11 @@ index a04fee7f2ba..d5c5c94b0d6 100644
 +		const vscodeBase = relativePath(getOriginalUrl(req))
 +
  		const productConfiguration = {
++			rootEndpoint: base,
  			// embedderIdentifier: 'server-distro',
  			// extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
-@@ -336,7 +338,7 @@ export class WebClientServer {
+ 			// 	...this._productService.extensionsGallery,
+@@ -336,7 +339,7 @@ export class WebClientServer {
  			folderUri: resolveWorkspaceURI(this._environmentService.args['default-folder']),
  			workspaceUri: resolveWorkspaceURI(this._environmentService.args['default-workspace']),
  			productConfiguration,
@@ -164,7 +166,7 @@ index a04fee7f2ba..d5c5c94b0d6 100644
  		};
  
  		const cookies = cookie.parse(req.headers.cookie || '');
-@@ -353,9 +355,11 @@ export class WebClientServer {
+@@ -353,9 +356,11 @@ export class WebClientServer {
  		const values: { [key: string]: string } = {
  			WORKBENCH_WEB_CONFIGURATION: asJSON(workbenchWebConfiguration),
  			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
@@ -178,7 +180,7 @@ index a04fee7f2ba..d5c5c94b0d6 100644
  		};
  
  		// DEV ---------------------------------------------------------------------------------------
-@@ -392,7 +396,7 @@ export class WebClientServer {
+@@ -392,7 +397,7 @@ export class WebClientServer {
  			'default-src \'self\';',
  			'img-src \'self\' https: data: blob:;',
  			'media-src \'self\';',
@@ -187,7 +189,7 @@ index a04fee7f2ba..d5c5c94b0d6 100644
  			'child-src \'self\';',
  			`frame-src 'self' https://*.vscode-cdn.net data:;`,
  			'worker-src \'self\' data: blob:;',
-@@ -465,3 +469,70 @@ export class WebClientServer {
+@@ -465,3 +470,70 @@ export class WebClientServer {
  		return void res.end(data);
  	}
  }
