@@ -225,6 +225,17 @@ Index: b/src/vs/code/browser/workbench/workbench.ts
  (function () {
  
  	// Find config by checking for DOM
+@@ -582,8 +572,8 @@ function readCookie(name: string): string | undefined {
+ 	if (!configElement || !configElementAttribute) {
+ 		throw new Error('Missing web configuration element');
+ 	}
+-	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = JSON.parse(configElementAttribute);
+-	const secretStorageKeyPath = readCookie('vscode-secret-key-path');
++	const originalConfig: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = { ...JSON.parse(configElementAttribute), remoteAuthority: location.host }
++	const secretStorageKeyPath = (window.location.pathname + "/mint-key").replace(/\/\/+/g, "/");
+ 	const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
+ 		? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
+ 	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents; workspaceUri?: UriComponents; callbackRoute: string } = {
 
 Index: b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 ===================================================================
