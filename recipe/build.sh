@@ -34,10 +34,14 @@ pushd remote
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
   jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig > package.json
-  npm install
+  npm install --verbose
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}"
+popd
+pushd build
+  # Compile contents of build directory with our compilation flags.
+  npm install --verbose
 popd
 # Install build tools for build_platform
 (
@@ -56,7 +60,7 @@ popd
   # Install all dependencies except @vscode/ripgrep
   mv package.json package.json.orig
   jq 'del(.dependencies."@vscode/ripgrep")' package.json.orig | jq 'del(.devDependencies."@vscode/telemetry-extractor")' > package.json
-  npm install
+  npm install --verbose
   # Install @vscode/ripgrep without downloading the pre-built ripgrep.
   # This often runs into Github API ratelimits and we won't use the binary in this package anyways.
   npm add --ignore-scripts "@vscode/ripgrep@${VSCODE_RIPGREP_VERSION}" "@vscode/telemetry-extractor@${VSCODE_TELEMETRY_VERSION}"

@@ -1,8 +1,8 @@
 diff --git a/src/vs/base/common/network.ts b/src/vs/base/common/network.ts
-index 7f14156..8fe6f4b 100644
+index f220611a722..5b6e0de871a 100644
 --- a/src/vs/base/common/network.ts
 +++ b/src/vs/base/common/network.ts
-@@ -215,7 +215,9 @@ class RemoteAuthoritiesImpl {
+@@ -220,7 +220,9 @@ class RemoteAuthoritiesImpl {
  		return URI.from({
  			scheme: platform.isWeb ? this._preferredWebSchema : Schemas.vscodeRemoteResource,
  			authority: `${host}:${port}`,
@@ -14,7 +14,7 @@ index 7f14156..8fe6f4b 100644
  		});
  	}
 diff --git a/src/vs/base/common/product.ts b/src/vs/base/common/product.ts
-index 1f58ce0..82f7301 100644
+index ac7c5529b27..15524da6371 100644
 --- a/src/vs/base/common/product.ts
 +++ b/src/vs/base/common/product.ts
 @@ -56,6 +56,7 @@ export type ExtensionVirtualWorkspaceSupport = {
@@ -26,36 +26,23 @@ index 1f58ce0..82f7301 100644
  	readonly quality?: string;
  	readonly commit?: string;
 diff --git a/src/vs/code/browser/workbench/workbench-dev.html b/src/vs/code/browser/workbench/workbench-dev.html
-index be6d30b..f644815 100644
+index 140030d8abe..279af84b891 100644
 --- a/src/vs/code/browser/workbench/workbench-dev.html
 +++ b/src/vs/code/browser/workbench/workbench-dev.html
-@@ -38,7 +38,7 @@
- 	<script src="{{WORKBENCH_WEB_BASE_URL}}/out/vs/loader.js"></script>
- 	<script src="{{WORKBENCH_WEB_BASE_URL}}/out/vs/webPackagePaths.js"></script>
- 	<script>
--		const baseUrl = new URL('{{WORKBENCH_WEB_BASE_URL}}', window.location.origin).toString();
-+		const baseUrl = new URL('{{WORKBENCH_WEB_BASE_URL}}', window.location).toString();
- 		Object.keys(self.webPackagePaths).map(function (key, index) {
- 			self.webPackagePaths[key] = `${baseUrl}/remote/web/node_modules/${key}/${self.webPackagePaths[key]}`;
- 		});
-diff --git a/src/vs/code/browser/workbench/workbench.html b/src/vs/code/browser/workbench/workbench.html
-index a4e9516..caefb15 100644
---- a/src/vs/code/browser/workbench/workbench.html
-+++ b/src/vs/code/browser/workbench/workbench.html
-@@ -38,7 +38,7 @@
- 	<script>
+@@ -37,7 +37,7 @@
  
- 		// Packages
+ 	<!-- Startup (do not modify order of script tags!) -->
+ 	<script>
 -		const baseUrl = new URL('{{WORKBENCH_WEB_BASE_URL}}', window.location.origin).toString();
 +		const baseUrl = new URL('{{WORKBENCH_WEB_BASE_URL}}', window.location).toString();
- 		Object.keys(self.webPackagePaths).map(function (key, index) {
- 			self.webPackagePaths[key] = `${baseUrl}/node_modules/${key}/${self.webPackagePaths[key]}`;
- 		});
+ 		globalThis._VSCODE_FILE_ROOT = baseUrl + '/out/';
+ 	</script>
+ 	<script>
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 7825456..afbe2b3 100644
+index 5ad89d22db6..f944c89569c 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -304,7 +304,8 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
+@@ -317,7 +317,8 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
  			this.startListening();
  		}
  
@@ -66,7 +53,7 @@ index 7825456..afbe2b3 100644
  
  	private startListening(): void {
 diff --git a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
-index e73ec41..c20b0ee 100644
+index e73ec41aba9..c20b0eed174 100644
 --- a/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 +++ b/src/vs/platform/extensionResourceLoader/common/extensionResourceLoader.ts
 @@ -15,7 +15,6 @@ import { getServiceMachineId } from '../../externalServices/common/serviceMachin
@@ -100,7 +87,7 @@ index e73ec41..c20b0ee 100644
  
  }
 diff --git a/src/vs/platform/remote/browser/browserSocketFactory.ts b/src/vs/platform/remote/browser/browserSocketFactory.ts
-index 7aea766..d70ef0f 100644
+index 7aea766301a..d70ef0f90d0 100644
 --- a/src/vs/platform/remote/browser/browserSocketFactory.ts
 +++ b/src/vs/platform/remote/browser/browserSocketFactory.ts
 @@ -281,6 +281,7 @@ export class BrowserSocketFactory implements ISocketFactory<RemoteConnectionType
@@ -112,10 +99,10 @@ index 7aea766..d70ef0f 100644
  			const errorListener = socket.onError(reject);
  			socket.onOpen(() => {
 diff --git a/src/vs/server/node/webClientServer.ts b/src/vs/server/node/webClientServer.ts
-index e8f879e..6568abe 100644
+index a04fee7f2ba..c675ecebdf5 100644
 --- a/src/vs/server/node/webClientServer.ts
 +++ b/src/vs/server/node/webClientServer.ts
-@@ -272,17 +272,13 @@ export class WebClientServer {
+@@ -271,17 +271,13 @@ export class WebClientServer {
  			return void res.end();
  		}
  
@@ -139,7 +126,7 @@ index e8f879e..6568abe 100644
  		if (!remoteAuthority) {
  			return serveError(req, res, 400, `Bad request.`);
  		}
-@@ -308,7 +304,11 @@ export class WebClientServer {
+@@ -307,7 +303,11 @@ export class WebClientServer {
  			scopes: [['user:email'], ['repo']]
  		} : undefined;
  
@@ -151,7 +138,7 @@ index e8f879e..6568abe 100644
  			// embedderIdentifier: 'server-distro',
  			// extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
  			// 	...this._productService.extensionsGallery,
-@@ -354,9 +354,9 @@ export class WebClientServer {
+@@ -353,9 +353,9 @@ export class WebClientServer {
  		const values: { [key: string]: string } = {
  			WORKBENCH_WEB_CONFIGURATION: asJSON(workbenchWebConfiguration),
  			WORKBENCH_AUTH_SESSION: authSessionInfo ? asJSON(authSessionInfo) : '',
@@ -163,7 +150,7 @@ index e8f879e..6568abe 100644
  		};
  
  		// DEV ---------------------------------------------------------------------------------------
-@@ -468,3 +468,70 @@ export class WebClientServer {
+@@ -465,3 +465,70 @@ export class WebClientServer {
  		return void res.end(data);
  	}
  }
