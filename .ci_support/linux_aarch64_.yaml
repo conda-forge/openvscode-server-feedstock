@@ -23,7 +23,7 @@ glib:
 krb5:
 - '1.21'
 libsecret:
-- '0.18'
+- '0.21'
 openssl:
 - '3'
 target_platform:
