@@ -1,0 +1,88 @@
+schema_version: 1
+
+context:
+  name: openvscode-server
+  version: 1.96.0
+
+package:
+  name: ${{ name|lower }}
+  version: ${{ version|replace("-", "_") }}
+
+source:
+  url: https://github.com/gitpod-io/openvscode-server/archive/refs/tags/openvscode-server-v${{ version }}.tar.gz
+  sha256: 5f3315ea7f4d6fbd5c995e2d8c3d8f1620b1f5b365d12a0d0e3388681c79f500
+  target_directory: src
+  patches:
+    - 0001-Allow-running-on-subdir.patch
+
+build:
+  number: 2
+  skip: win or (osx and x86_64)
+
+requirements:
+  build:
+    - ${{ compiler('c') }}
+    - ${{ stdlib("c") }}
+    - ${{ compiler('cxx') }}
+    - make
+    - pkg-config
+    - nodejs 20.*
+    - node-gyp
+    # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
+    - openssl
+    - jq
+    - if: linux
+      then: glib
+    - if: linux
+      then: krb5
+    - if: linux
+      then: libsecret
+    - if: linux
+      then: libxkbfile
+    - if: linux
+      then: xorg-libx11
+    - if: linux
+      then: xorg-xproto
+    - if: linux
+      then: xorg-kbproto
+  host:
+    - nodejs 18.*
+    # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
+    - openssl
+    - ripgrep
+    - if: linux
+      then: glib
+    - if: linux
+      then: krb5
+    - if: linux
+      then: libsecret
+    - if: linux
+      then: libxkbfile
+    - if: linux
+      then: xorg-libx11
+    - if: linux
+      then: xorg-xproto
+    - if: linux
+      then: xorg-kbproto
+  run:
+    - nodejs 18.*
+    - ripgrep
+
+tests:
+  - script:
+      - openvscode-server --help
+
+about:
+  license: MIT
+  license_file:
+    - LICENSE.txt
+    - ThirdPartyNotices.txt
+  summary: Run upstream VS Code on a remote machine with access through a modern web browser from any device, anywhere.
+  homepage: https://github.com/gitpod-io/openvscode-server
+
+extra:
+  recipe-maintainers:
+    - pavelzw
+    - xhochy
+    - jtilly
+    - janjagusch
