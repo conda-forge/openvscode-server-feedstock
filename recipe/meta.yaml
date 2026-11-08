@@ -13,7 +13,7 @@ source:
     - 0001-Allow-running-on-subdir.patch
 
 build:
-  number: 1
+  number: 2
   skip: true  # [win or (osx and x86_64)]
 
 requirements:
@@ -22,7 +22,7 @@ requirements:
     - {{ stdlib("c") }}
     - {{ compiler('cxx') }}
     - make
-    - pkg-config
+    - pkgconf
     - nodejs 20.*
     - node-gyp
     # We might need to ensure that we recompile all third-party deps to support OpenSSL 3+
